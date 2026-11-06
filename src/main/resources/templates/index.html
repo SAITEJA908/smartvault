@@ -1,0 +1,829 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartVault | Intelligent File Organizer</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f5fc;
+            color: #172044;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            background: #171b38;
+            color: white;
+            padding: 25px 15px;
+        }
+
+        .logo {
+            font-size: 29px;
+            font-weight: bold;
+            margin-bottom: 55px;
+        }
+
+        .logo span {
+            color: #9370ff;
+        }
+
+        .nav-title {
+            color: #91a0ca;
+            margin: 25px 10px 15px;
+            font-size: 13px;
+        }
+
+        .nav-item {
+            padding: 17px;
+            margin: 7px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 17px;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #373c65;
+        }
+
+        .main {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .topbar {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .welcome {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+
+        .welcome h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .welcome p {
+            color: #8290b2;
+            font-size: 17px;
+        }
+
+        button {
+            background: #7055e8;
+            color: white;
+            border: none;
+            padding: 13px 22px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #5940c9;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 28px;
+            border-radius: 18px;
+            box-shadow: 0 5px 20px #2020500c;
+        }
+
+        .card .emoji {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #8290b2;
+        }
+
+        .panel {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px #2020500c;
+        }
+
+        .panel h2 {
+            margin-bottom: 22px;
+        }
+
+        .upload-area {
+            border: 2px dashed #8565ff;
+            background: #f2efff;
+            padding: 55px 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .upload-area p {
+            margin: 15px;
+            color: #8290b2;
+        }
+
+        input[type="file"] {
+            margin: 15px;
+            max-width: 100%;
+        }
+
+        .message {
+            margin-top: 20px;
+            line-height: 1.8;
+            color: #07834e;
+            overflow-wrap: anywhere;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #e8eaf2;
+            text-align: left;
+            overflow-wrap: anywhere;
+        }
+
+        th {
+            color: #8290b2;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 30px;
+            color: #8290b2;
+        }
+
+        .small-button {
+            padding: 8px 13px;
+            font-size: 13px;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            font-size: 18px;
+        }
+
+        .category-card strong {
+            display: block;
+            font-size: 27px;
+            margin-top: 12px;
+        }
+
+        @media(max-width: 900px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(max-width: 650px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .cards,
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .panel {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+    <div class="logo">✦ Smart<span>Vault</span></div>
+
+    <div class="nav-title">WORKSPACE</div>
+
+    <div class="nav-item active" onclick="showSection('dashboard', this)">
+        ▦ Dashboard
+    </div>
+
+    <div class="nav-item" onclick="showSection('myfiles', this)">
+        📁 My Files
+    </div>
+
+    <div class="nav-item" onclick="showSection('upload', this)">
+        ⬆ Upload Files
+    </div>
+
+    <div class="nav-item" onclick="showSection('duplicates', this)">
+        🔍 Duplicates
+    </div>
+
+    <div class="nav-item" onclick="showSection('activity', this)">
+        📊 Activity
+    </div>
+
+    <div class="nav-title">MANAGEMENT</div>
+
+    <div class="nav-item" onclick="showSection('categories', this)">
+        📂 Categories
+    </div>
+</aside>
+
+<main class="main">
+
+    <div class="topbar">
+        Intelligent File Management
+    </div>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="section active">
+
+        <div class="welcome">
+            <div>
+                <h1>Welcome to SmartVault 👋</h1>
+                <p>Your intelligent file organization workspace.</p>
+            </div>
+
+            <button onclick="showSection('upload')">
+                + Upload Files
+            </button>
+        </div>
+
+        <div class="cards">
+
+            <div class="card">
+                <div class="emoji">📁</div>
+                <h2 id="totalFiles">0</h2>
+                <p>Total Files Uploaded</p>
+            </div>
+
+            <div class="card">
+                <div class="emoji">🗂️</div>
+                <h2 id="organizedFiles">0</h2>
+                <p>Files Organized</p>
+            </div>
+
+            <div class="card">
+                <div class="emoji">🔍</div>
+                <h2 id="duplicateCount">0</h2>
+                <p>Duplicates Detected</p>
+            </div>
+
+            <div class="card">
+                <div class="emoji">💾</div>
+                <h2 id="storageUsed">0 MB</h2>
+                <p>Storage Used</p>
+            </div>
+
+        </div>
+
+        <div class="panel">
+            <h2>Recent Files</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Category</th>
+                        <th>Size</th>
+                    </tr>
+                </thead>
+                <tbody id="recentFiles"></tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <!-- MY FILES -->
+    <section id="myfiles" class="section">
+
+        <div class="panel">
+            <h2>📁 My Files</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Category</th>
+                        <th>Size</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="allFiles"></tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <!-- UPLOAD -->
+    <section id="upload" class="section">
+
+        <div class="panel">
+            <h2>⬆ Upload Your Files</h2>
+
+            <div class="upload-area">
+                <h2>☁️</h2>
+                <h3>Select files to upload</h3>
+                <p>Choose one or multiple files</p>
+
+                <input type="file" id="fileInput" multiple>
+
+                <br>
+
+                <button onclick="uploadFiles()">
+                    Upload Files
+                </button>
+
+                <div id="uploadMessage" class="message"></div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- DUPLICATES -->
+    <section id="duplicates" class="section">
+
+        <div class="panel">
+            <h2>🔍 Duplicate Files</h2>
+
+            <p id="duplicateSummary">Loading duplicate information...</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Duplicate File</th>
+                        <th>Original File</th>
+                    </tr>
+                </thead>
+
+                <tbody id="duplicateTable"></tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <!-- ACTIVITY -->
+    <section id="activity" class="section">
+
+        <div class="panel">
+            <h2>📊 File Access Activity</h2>
+
+            <p>Track how frequently your files are accessed.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Category</th>
+                        <th>Access Count</th>
+                        <th>Last Accessed</th>
+                    </tr>
+                </thead>
+
+                <tbody id="activityTable"></tbody>
+            </table>
+        </div>
+
+        <div class="panel">
+            <h2>Frequently Used Files</h2>
+            <ul id="frequentFiles"></ul>
+        </div>
+
+    </section>
+
+    <!-- CATEGORIES -->
+    <section id="categories" class="section">
+
+        <div class="panel">
+            <h2>📂 File Categories</h2>
+
+            <div class="category-grid">
+
+                <div class="category-card">
+                    📄 Documents
+                    <strong id="documentsCount">0</strong>
+                </div>
+
+                <div class="category-card">
+                    🖼️ Images
+                    <strong id="imagesCount">0</strong>
+                </div>
+
+                <div class="category-card">
+                    🎬 Videos
+                    <strong id="videosCount">0</strong>
+                </div>
+
+                <div class="category-card">
+                    🎵 Audio
+                    <strong id="audioCount">0</strong>
+                </div>
+
+                <div class="category-card">
+                    📦 Others
+                    <strong id="othersCount">0</strong>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+</main>
+
+<script>
+
+    let uploadedFiles = [];
+
+    function showSection(sectionId, clickedItem) {
+
+        document.querySelectorAll(".section").forEach(section => {
+            section.classList.remove("active");
+        });
+
+        document.getElementById(sectionId).classList.add("active");
+
+        document.querySelectorAll(".nav-item").forEach(item => {
+            item.classList.remove("active");
+        });
+
+        if (clickedItem) {
+            clickedItem.classList.add("active");
+        } else {
+            document.querySelectorAll(".nav-item").forEach(item => {
+                if (item.getAttribute("onclick")?.includes(sectionId)) {
+                    item.classList.add("active");
+                }
+            });
+        }
+
+        if (sectionId === "activity") {
+            loadActivity();
+        }
+
+        if (sectionId === "duplicates") {
+            loadDuplicates();
+        }
+
+        if (sectionId === "myfiles") {
+            loadSavedFiles();
+        }
+
+        if (sectionId === "categories") {
+            loadSavedFiles();
+        }
+    }
+
+    async function loadSavedFiles() {
+
+        try {
+
+            const response = await fetch("/api/files/list");
+
+            if (!response.ok) {
+                throw new Error("Could not load files");
+            }
+
+            uploadedFiles = await response.json();
+
+            updateDashboard();
+
+        } catch (error) {
+
+            console.error(error);
+        }
+    }
+
+    function updateDashboard() {
+
+        document.getElementById("totalFiles").textContent =
+            uploadedFiles.length;
+
+        document.getElementById("organizedFiles").textContent =
+            uploadedFiles.length;
+
+        let totalStorage = 0;
+
+        uploadedFiles.forEach(file => {
+            totalStorage += Number(file.size || 0);
+        });
+
+        document.getElementById("storageUsed").textContent =
+            (totalStorage / (1024 * 1024)).toFixed(2) + " MB";
+
+        const rows = uploadedFiles.map(file => `
+            <tr>
+                <td>${escapeHtml(file.name)}</td>
+                <td>${escapeHtml(file.category)}</td>
+                <td>${formatSize(file.size)}</td>
+            </tr>
+        `).join("");
+
+        document.getElementById("recentFiles").innerHTML =
+            rows || emptyRow(3, "No files uploaded yet.");
+
+        document.getElementById("allFiles").innerHTML =
+            uploadedFiles.map(file => `
+                <tr>
+                    <td>${escapeHtml(file.name)}</td>
+                    <td>${escapeHtml(file.category)}</td>
+                    <td>${formatSize(file.size)}</td>
+                    <td>
+                        <button class="small-button"
+                            onclick="openFile('${encodeURIComponent(file.category)}','${encodeURIComponent(file.name)}')">
+                            Open
+                        </button>
+                    </td>
+                </tr>
+            `).join("") || emptyRow(4, "No files uploaded yet.");
+
+        const counts = {
+            Documents: 0,
+            Images: 0,
+            Videos: 0,
+            Audio: 0,
+            Others: 0
+        };
+
+        uploadedFiles.forEach(file => {
+            if (counts[file.category] !== undefined) {
+                counts[file.category]++;
+            } else {
+                counts.Others++;
+            }
+        });
+
+        document.getElementById("documentsCount").textContent =
+            counts.Documents;
+
+        document.getElementById("imagesCount").textContent =
+            counts.Images;
+
+        document.getElementById("videosCount").textContent =
+            counts.Videos;
+
+        document.getElementById("audioCount").textContent =
+            counts.Audio;
+
+        document.getElementById("othersCount").textContent =
+            counts.Others;
+    }
+
+    async function uploadFiles() {
+
+        const input = document.getElementById("fileInput");
+        const message = document.getElementById("uploadMessage");
+
+        if (!input.files.length) {
+            message.textContent = "Please choose at least one file.";
+            return;
+        }
+
+        const formData = new FormData();
+
+        for (const file of input.files) {
+            formData.append("files", file);
+        }
+
+        message.textContent = "Uploading files...";
+
+        try {
+
+            const response = await fetch("/api/files/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error("Upload failed");
+            }
+
+            const result = await response.json();
+
+            let output = "";
+
+            if (result.uploaded?.length) {
+                output += "Uploaded: " +
+                    result.uploaded.join(", ") + ". ";
+            }
+
+            if (result.duplicates?.length) {
+                output += "Duplicates skipped: " +
+                    result.duplicates.join("; ") + ". ";
+            }
+
+            if (result.failed?.length) {
+                output += "Failed: " +
+                    result.failed.join("; ");
+            }
+
+            message.textContent = output || "Upload completed.";
+
+            input.value = "";
+
+            await loadSavedFiles();
+
+            await loadDuplicates();
+
+        } catch (error) {
+
+            message.textContent = "Upload error: " + error.message;
+        }
+    }
+
+    async function loadDuplicates() {
+
+        try {
+
+            const response = await fetch("/api/files/duplicates");
+
+            if (!response.ok) {
+                throw new Error("Unable to load duplicates");
+            }
+
+            const duplicates = await response.json();
+
+            document.getElementById("duplicateCount").textContent =
+                duplicates.length;
+
+            document.getElementById("duplicateSummary").textContent =
+                duplicates.length + " duplicate file(s) detected.";
+
+            document.getElementById("duplicateTable").innerHTML =
+                duplicates.map(item => `
+                    <tr>
+                        <td>${escapeHtml(item.name)}</td>
+                        <td>${escapeHtml(item.original)}</td>
+                    </tr>
+                `).join("") || emptyRow(2, "No duplicate files found.");
+
+        } catch (error) {
+
+            document.getElementById("duplicateSummary").textContent =
+                "Unable to load duplicate information.";
+        }
+    }
+
+    async function loadActivity() {
+
+        try {
+
+            const response = await fetch("/api/files/access-stats");
+
+            if (!response.ok) {
+                throw new Error("Unable to load activity");
+            }
+
+            const files = await response.json();
+
+            document.getElementById("activityTable").innerHTML =
+                files.map(file => `
+                    <tr>
+                        <td>${escapeHtml(file.name)}</td>
+                        <td>${escapeHtml(file.category)}</td>
+                        <td>${file.accessCount}</td>
+                        <td>${escapeHtml(file.lastAccessed)}</td>
+                    </tr>
+                `).join("") || emptyRow(4, "No file activity found.");
+
+            const frequent = files
+                .filter(file => file.accessCount > 0)
+                .sort((a, b) => b.accessCount - a.accessCount)
+                .slice(0, 5);
+
+            document.getElementById("frequentFiles").innerHTML =
+                frequent.map(file => `
+                    <li>
+                        ${escapeHtml(file.name)}
+                        — Opened ${file.accessCount} time(s)
+                    </li>
+                `).join("") || "<li>No frequently accessed files yet.</li>";
+
+        } catch (error) {
+
+            document.getElementById("activityTable").innerHTML =
+                emptyRow(4, "Unable to load file activity.");
+        }
+    }
+
+    function openFile(category, fileName) {
+
+        const url = "/api/files/open/" +
+            category + "/" + fileName;
+
+        window.open(url, "_blank");
+    }
+
+    function formatSize(bytes) {
+
+        const size = Number(bytes || 0);
+
+        if (size < 1024) {
+            return size + " B";
+        }
+
+        if (size < 1024 * 1024) {
+            return (size / 1024).toFixed(2) + " KB";
+        }
+
+        return (size / (1024 * 1024)).toFixed(2) + " MB";
+    }
+
+    function escapeHtml(value) {
+
+        return String(value ?? "").replace(/[&<>"']/g, character => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[character]);
+    }
+
+    function emptyRow(columns, message) {
+
+        return `
+            <tr>
+                <td colspan="${columns}" class="empty">
+                    ${message}
+                </td>
+            </tr>
+        `;
+    }
+
+    // Load saved information when the website opens
+    loadSavedFiles();
+    loadDuplicates();
+
+</script>
+
+</body>
+</html>
