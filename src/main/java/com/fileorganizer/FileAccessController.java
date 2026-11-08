@@ -1,4 +1,3 @@
-
 package com.fileorganizer;
 
 import org.springframework.core.io.Resource;
@@ -17,9 +16,9 @@ import java.util.*;
 @RequestMapping("/api/files")
 public class FileAccessController {
 
+    // Railway persistent volume
     private final Path uploadDirectory =
-            Paths.get(System.getProperty("user.home"),
-                    "SmartVault", "uploads");
+            Paths.get("/app/data", "SmartVault", "uploads");
 
     private final FileRecordService fileRecordService;
 
@@ -40,11 +39,14 @@ public class FileAccessController {
         Path filePath =
                 categoryPath.resolve(fileName).normalize();
 
+        // Security check
         if (!categoryPath.startsWith(uploadDirectory.normalize())
                 || !filePath.startsWith(categoryPath)) {
+
             return ResponseEntity.badRequest().build();
         }
 
+        // Check whether file exists
         if (!Files.isRegularFile(filePath)) {
             return ResponseEntity.notFound().build();
         }
@@ -57,7 +59,7 @@ public class FileAccessController {
 
         MediaType mediaType =
                 MediaTypeFactory.getMediaType(fileName)
-                .orElse(MediaType.APPLICATION_OCTET_STREAM);
+                        .orElse(MediaType.APPLICATION_OCTET_STREAM);
 
         return ResponseEntity.ok()
                 .contentType(mediaType)
@@ -97,6 +99,7 @@ public class FileAccessController {
             statistics.add(record);
         }
 
+        // Sort by access count
         statistics.sort((a, b) ->
                 Integer.compare(
                         (int) b.get("accessCount"),

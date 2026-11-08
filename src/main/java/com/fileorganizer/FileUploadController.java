@@ -1,4 +1,3 @@
-
 package com.fileorganizer;
 
 import org.springframework.web.bind.annotation.*;
@@ -13,18 +12,21 @@ import java.util.*;
 @RequestMapping("/api/files")
 public class FileUploadController {
 
+    // Railway persistent volume
     private final Path uploadDirectory =
-            Paths.get(System.getProperty("user.home"),
-                    "SmartVault", "uploads");
+            Paths.get("/app/data", "SmartVault", "uploads");
 
     private final FileRecordService fileRecordService;
+    private final FileRecordRepository fileRecordRepository;
     private final DuplicateRecordRepository duplicateRepository;
 
     public FileUploadController(
             FileRecordService fileRecordService,
+            FileRecordRepository fileRecordRepository,
             DuplicateRecordRepository duplicateRepository) {
 
         this.fileRecordService = fileRecordService;
+        this.fileRecordRepository = fileRecordRepository;
         this.duplicateRepository = duplicateRepository;
     }
 
@@ -156,7 +158,6 @@ public class FileUploadController {
                     duplicate.setCategory(original.getCategory());
                     duplicate.setSha256(newHash);
 
-                    // SAVE DUPLICATE HISTORY IN MYSQL
                     duplicateRepository.save(duplicate);
 
                     duplicates.add(
@@ -194,10 +195,10 @@ public class FileUploadController {
                     );
                 }
 
-                // Save file on computer
+                // Save file
                 Files.write(destination, fileData);
 
-                // Save normal file details in MySQL
+                // Save file details in MySQL
                 FileRecord record = new FileRecord();
 
                 record.setName(destination.getFileName().toString());
@@ -256,6 +257,68 @@ public class FileUploadController {
         return fileList;
     }
 
+    // Delete a file
+    @DeleteMapping("/delete/{category}/{fileName:.+}")
+    public Map<String, Object> deleteFile(
+            @PathVariable String category,
+            @PathVariable String fileName) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+
+            Path categoryDirectory =
+                    uploadDirectory.resolve(category).normalize();
+
+            Path filePath =
+                    categoryDirectory.resolve(fileName).normalize();
+
+            if (!categoryDirectory.startsWith(
+                    uploadDirectory.normalize())) {
+
+                response.put("success", false);
+                response.put("message", "Invalid category");
+                return response;
+            }
+
+            if (!filePath.startsWith(categoryDirectory)) {
+
+                response.put("success", false);
+                response.put("message", "Invalid file path");
+                return response;
+            }
+
+            Optional<FileRecord> record =
+                    fileRecordRepository.findByNameAndCategory(
+                            fileName, category);
+
+            if (record.isEmpty()) {
+
+                response.put("success", false);
+                response.put("message", "File record not found");
+                return response;
+            }
+
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+            }
+
+            fileRecordRepository.delete(record.get());
+
+            response.put("success", true);
+            response.put("message",
+                    fileName + " deleted successfully");
+
+        } catch (Exception e) {
+
+            response.put("success", false);
+            response.put("message",
+                    "Delete failed: " + e.getMessage());
+        }
+
+        return response;
+    }
+
     // Get duplicate history from MySQL
     @GetMapping("/duplicates")
     public List<Map<String, Object>> getDuplicates() {
@@ -269,7 +332,6 @@ public class FileUploadController {
 
             Map<String, Object> item = new HashMap<>();
 
-            // Keep the field names expected by the existing HTML
             item.put("name", record.getDuplicateName());
             item.put("original", record.getOriginalName());
             item.put("category", record.getCategory());
